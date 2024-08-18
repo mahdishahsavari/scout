@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String  @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String  @unique
+  password  String
+  address   String?
+  phone     Int?
+  isActive  Boolean @default(false)
+  role      Role    @default(USER)
+  order     Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  totalPrice Decimal
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  price       Decimal
+  category    Category    @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  images      Image[]
+  orderItems  OrderItem[]
+
+  createdAt DateTime @default(now())
+}
+
+model Image {
+  id        String  @id @default(uuid())
+  url       String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  products Product[]
+
+  createdAt DateTime @default(now())
+}
